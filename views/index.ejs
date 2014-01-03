@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="urlApp">
+    <head>
+        <title>URL Shortener</title>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="description" content="URL shortener.">
+        <meta name="author" content="Brian Shoemaker (brianshoemaker@gmail.com">
+        <link href="/u/css/bootstrap.min.css" rel="stylesheet" />
+        <link href="/u/css/style.css" rel="stylesheet" />
+        <link href="http://fonts.googleapis.com/css?family=Open+Sans:400|Lobster" rel="stylesheet" type="text/css">
+        <!--[if lt IE 9]>
+          <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+          <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+        <![endif]-->
+        <script>
+          (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+          (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+          m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+          })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+          ga('create', 'UA-2808579-5', 'shoe.io');
+          ga('send', 'pageview');
+
+        </script>
+    </head>
+    <body ng-controller="UrlListCtrl">
+        <section id="intro">
+            <div class="container">
+                <div class="row">
+                    <div class="col-sm-6">
+                        <h1>URL Shortener</h1>
+                    </div>
+                    <div class="col-sm-6" id="auth">
+                        <% if (isAuthenticated) { %>
+                            <p class="pull-right">
+                                <br />
+                                <strong>@<%= user.twitter%></strong>&nbsp;&nbsp;/&nbsp;&nbsp;<a href="/auth/logout">Logout</a>
+                            </p>
+                        <% } else { %>
+                            <p class="pull-right">
+                                <a href="/auth/twitter"><img src="/u/img/sign-in-with-twitter-gray.png" /></a>
+                                <span class="help-block">Sign in to save a list of URLs you have shortened.</span>
+                            </p>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <div class="container">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <form class="form-horizontal" role="form">
+                            <div class="form-group">
+                                <div class="col-sm-12">
+                                    <input type="text" class="form-control input-lg" id="txtUrl" ng-model="longUrl" placeholder="Enter a long url here.">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-sm-12">
+                                    <button type="button" class="btn btn-success btn-lg" ng-click="addUrl(longUrl)" id="btnNew">Shorten!</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="newShortUrlContainer" ng-show="newUrl.shortUrl">
+            <div class="container">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <h3>Shortened!</h3>
+                        <form class="form-horizontal" role="form">
+                            <div class="form-group">
+                                <div class="col-sm-4">
+                                    <label class="sr-only" for="txtShortUrl">Shortened URL</label>
+                                    <input type="text" id="txtShortUrl" class="form-control input-lg" ng-model="newUrl.shortUrl" placeholder="Your shortened URL will appear here." />
+                                    <span class="help-block">Copy and share this shortened URL.</span>
+                                </div>
+                                <div class="col-sm-8">
+                                    <pre>{{newUrl.longUrl}}</pre>
+                                    <span class="help-block">This is the URL you just shortened.</span>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <div class="container">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <div class="table-responsive" ng-show="urls.length > 0">
+                            <table class="table table-condensed">
+                                <thead>
+                                    <tr>
+                                        <th>Short URL</th>
+                                        <th>Last Accessed</th>
+                                        <th>Clicks</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr ng-repeat="url in urls">
+                                        <td>
+                                            <a href="{{url.shortUrl}}" target="_blank">{{url.shortUrl}}</a><br/>
+                                            <span class="tblLongUrl"><small>{{url.longUrl|characters:70}}</small></span>
+                                        </td>
+                                        <td>{{url.accessedDate}}</td>
+                                        <td>{{url.hitCount}}</td>
+                                        <td><button type="button" class="btn btn-danger" ng-click="removeUrl(url.shortCode, $index)">Delete</button></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <p ng-show="urls.length == 0">
+                            A list of your shortened URLs will appear here. 
+                        </p>
+
+                        <% if (!isAuthenticated) { %>
+                            <p>
+                                Anyone can create a short URL, but you must <a href="/auth/twitter">sign in</a> to save a list of URLs you have created. 
+                            </p>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <footer>
+            <h4>
+                Made by <a href="http://brianshoemaker.com" target="_blank">Brian Shoemaker</a>
+            </h4>
+            <p>
+                Built with <a href="http://nodejs.org/" target="_blank">Node.js</a>, 
+                <a href="http://angularjs.org/" target="_blank">AngularJS</a>, 
+                <a href="http://www.mongodb.org/" target="_blank">MongoDB</a>, 
+                and <a href="http://getbootstrap.com/" target="_blank">Bootstrap</a>.
+            </p>
+        </footer>   
+
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+        <script src="/u/js/bootstrap.min.js"></script>
+        <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.5/angular.min.js"></script>
+        <script src="/u/js/truncate.js"></script>
+        <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.5/angular-resource.min.js"></script>
+        <script src="/u/js/app.js"></script>
+        <script src="/u/js/services.js"></script>
+        <script src="/u/js/controllers.js"></script>
+    </body>
+</html>
