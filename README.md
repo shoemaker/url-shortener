@@ -10,6 +10,7 @@ This will continue to be a learning/sandbox project.
 Install dependencies. 
     
     $ npm install
+    $ bower install 
 
 Rename 'sample-config.js' to 'config.js' or obtain the decryption key for the Makefile.
 

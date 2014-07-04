@@ -3,8 +3,10 @@
  * Module dependencies.
  */
 var fs = require('fs');  // File system access
-var express = require('express');
-var http = require('http');
+var express = require('express');  // Express framework
+var bodyParser = require('body-parser');
+var compress = require('compression');
+var cookieParser = require('cookie-parser');
 var path = require('path');
 
 // App configuration
@@ -18,44 +20,32 @@ var routes = require('./routes');
 var api = require('./routes/api');
 var c = require('./config').config;  // App configuration
 
+// Init Express
 var app = express();
-// all environments
 app.set('port', c.appPort || 3000);
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
-//app.use(express.favicon());
-//app.use(express.logger('dev'));
-app.use(express.bodyParser());
-app.use(express.json());
-app.use(express.urlencoded());
-app.use(express.methodOverride());
-app.use(express.cookieParser('your secret here'));
-app.use(express.session());
-app.use(app.router);
-app.use(c.appPath, express.static(path.join(__dirname, 'public')));
-
-// development only
-if ('development' == app.get('env')) {
-    app.use(express.errorHandler());
-}
-
+app.use(compress());
+app.use(bodyParser.json());
+app.use(cookieParser('foo'));
 
 /**
  * Define routes.
  */
+app.use(c.appPath, express.static(path.join(__dirname, 'public')));
 app.get(c.appPath, routes.index);
-app.post(c.appPath + '/api', api.create);
-app.get(c.appPath + '/api/:shortCode?', api.get);
-app.get(c.appPath + '/api/:shortCode/delete', api.delete);
-app.get(c.appPath + '/:shortCode', routes.redirect);
+app.post(c.appPath + 'api', api.create);
+app.get(c.appPath + 'api/:shortCode?', api.get);
+app.get(c.appPath + 'api/:shortCode/delete', api.delete);
+app.get(c.appPath + ':shortCode', routes.redirect);
 
 
 /**
  * Fire up the server. 
  */
-http.createServer(app).listen(app.get('port'), function(){
-    console.log('Server started on port ' + app.get('port') + '. \nTry this: http://localhost:' + app.get('port') + c.appPath);
-});
+app.listen(app.get('port'));
+console.log('Server started on port ' + app.get('port') + '. \nTry this: http://localhost:' + app.get('port') + c.appPath);
+
 
 
 

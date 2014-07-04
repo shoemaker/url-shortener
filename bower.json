@@ -1,0 +1,19 @@
+{
+  "name": "url-shortener",
+  "main": "stream.js",
+  "version": "1.0.1",
+  "homepage": "https://github.com/shoemaker/url-shortener",
+  "authors": [
+    "Brian Shoemaker <brianshoemaker@gmail.com>"
+  ],
+  "moduleType": [
+    "node"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "jquery": "1.9.1",
+    "bootstrap": "3.0.2",
+    "angular": "1.2.19",
+    "angular-resource": "1.2.19"
+  }
+}

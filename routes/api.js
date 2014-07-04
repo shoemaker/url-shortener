@@ -9,7 +9,9 @@ var Db = mongo.Db;
 var ObjectID = require('mongodb').ObjectID;
 
 
-// CREATE a short url. 
+/*
+ * CREATE a short URL. 
+ */
 exports.create = function(req, res) {
     // If we are in development, a default/debug user will be specified. 
     if (c.debugUser) { req.cookies.userid = c.debugUser; }
@@ -69,8 +71,10 @@ exports.create = function(req, res) {
 };
 
 
-// GET a specific URL record.
-// if no short code, retrieve all for this user.
+/* 
+ * GET a specific URL record.
+ * If no short code, retrieve all for this user.
+ */
 exports.get = function(req, res) {
     var response = models.wrapper();    
     
@@ -126,7 +130,9 @@ exports.get = function(req, res) {
     }
 }
 
-// DELETE a specific URL record.
+/*
+ * DELETE a specific URL record.
+ */
 exports.delete = function(req, res) {
     // If we are in development, a default/debug user will be specified. 
     if (c.debugUser) { req.cookies.userid = c.debugUser; }
@@ -164,10 +170,12 @@ exports.delete = function(req, res) {
 
 /**
  Helper Functions
+ **/
+
+
+/*
+ * Generate a short code.
  */
-
-
-// Function to generate a short code
 function generateShortCode(len) {
     var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     

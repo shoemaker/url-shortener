@@ -6,10 +6,10 @@ var util = require('../util');
 var Db = mongo.Db;
 var ObjectID = require('mongodb').ObjectID;
 
+
 /*
  * GET home page.
  */
-
 exports.index = function(req, res){
     var model = {
         isAuthenticated : false
@@ -41,6 +41,9 @@ exports.index = function(req, res){
     
 };
 
+/*
+ * Redirect from short URL to destination URL.
+ */
 exports.redirect = function(req, res) {
     // Build query
     var query = {};
