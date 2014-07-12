@@ -18,6 +18,18 @@
     "moment": "~2.4.0"
   },
   "devDependencies": {
-    "nodemon": "~0.7.10"
+    "gulp": "^3.8.6",
+    "gulp-clean": "^0.3.1",
+    "gulp-header": "^1.0.2",
+    "gulp-jshint": "^1.6.4",
+    "gulp-minify-css": "^0.3.6",
+    "gulp-nodemon": "^1.0.4",
+    "gulp-rename": "^1.2.0",
+    "gulp-uglify": "^0.3.1",
+    "nodemon": "1.2.0",
+    "lodash": "2.4.1"
+  },
+  "engines": {
+    "node": ">=0.10.29"
   }
 }

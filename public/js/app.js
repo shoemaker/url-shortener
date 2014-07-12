@@ -1,3 +1,5 @@
+/*global $:false */
+/*global angular:false */
 'use strict';
 
 /* App Module */
@@ -12,7 +14,7 @@ $('#btnNew').click(function() {
 });
 
 $('#txtUrl').keypress(function(e) {
-    if(e.which == 13) { 
+    if(e.which === 13) { 
         $('#btnNew').click();
     }
 });

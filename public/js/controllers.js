@@ -1,3 +1,7 @@
+/*global $:false */
+/*global angular:false */
+'use strict';
+
 var urlApp = angular.module('urlApp', ['urlServices', 'truncate']);
 
 urlApp.controller('UrlListCtrl', ['$scope', 'URL', function($scope, URL) {
@@ -16,7 +20,7 @@ urlApp.controller('UrlListCtrl', ['$scope', 'URL', function($scope, URL) {
 
             });
         }
-    }
+    };
 
     $scope.removeUrl = function(shortCode, idx) {
         if (shortCode && shortCode.length > 0) {
@@ -24,6 +28,6 @@ urlApp.controller('UrlListCtrl', ['$scope', 'URL', function($scope, URL) {
                 $scope.urls.splice(idx, 1);
             });
         }
-    }
+    };
 }]);
 

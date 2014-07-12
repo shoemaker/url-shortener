@@ -1,3 +1,4 @@
+/*global angular:false */
 'use strict';
 
 /* Services */
