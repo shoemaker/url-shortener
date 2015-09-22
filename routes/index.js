@@ -1,10 +1,8 @@
-var mongo = require('mongodb');  // Init MongoDB library
+var MongoClient = require('mongodb').MongoClient;
+var ObjectID = require('mongodb').ObjectID;
 var models = require('../models');
 var c = require('../config').config;  // App configuration
 var util = require('../util');
-
-var Db = mongo.Db;
-var ObjectID = require('mongodb').ObjectID;
 
 
 /*
@@ -24,13 +22,12 @@ exports.index = function(req, res){
         query._id = o_id;
     }
     
-    Db.connect(util.buildMongoURL(c.dbs.common), function(err, db) {
+    MongoClient.connect(util.buildMongoURL(c.dbs.common), function(err, db) {
         if(!err) {  
-            db.collection('users', {safe:false}, function(err, collection) {
-                collection.findAndModify(query, [['_id','asc']], { $set : { dateAccessed : new Date() } }, {}, function(err, user) {
-                    model.user = user;
-                    res.render('index', model);
-                });
+            var collection = db.collection('users');
+            collection.findAndModify(query, [['_id','asc']], { $set : { dateAccessed : new Date() } }, {}, function(err, user) {
+                model.user = user;
+                res.render('index', model);
             });
         } else {
             console.log('Encountered error: ' + err + '.');
@@ -49,24 +46,23 @@ exports.redirect = function(req, res) {
     var query = {};
     query.shortCode = req.params.shortCode;
 
-    Db.connect(util.buildMongoURL(c.dbs.common), function(err, db) {
+    MongoClient.connect(util.buildMongoURL(c.dbs.common), function(err, db) {
         if(!err) {  
-            db.collection('urls', {safe:false}, function(err, collection) {
-                collection.findAndModify(query, [['_id','asc']], { $set : { accessedDate : new Date() }, $inc: { hitCount : 1 } }, {}, function(err, url){
-                   if (err) {
-                        console.log('Encountered error: ' + err + '.');
-                        res.render('error');
-                    } else if (!url) {
-                        console.log('No URL found for ' + req.params.shortCode + '.');
-                        res.render('notFound');
-                    } else {
-                        console.log('Successfully retreived URL.');
-                        res.redirect(url.longUrl);
-                    }
-                    
-                    db.close();
-                }); 
-            });
+            var collection = db.collection('urls');
+            collection.findAndModify(query, [['_id','asc']], { $set : { accessedDate : new Date() }, $inc: { hitCount : 1 } }, {}, function(err, url){
+               if (err) {
+                    console.log('Encountered error: ' + err + '.');
+                    res.render('error');
+                } else if (!url) {
+                    console.log('No URL found for ' + req.params.shortCode + '.');
+                    res.render('notFound');
+                } else {
+                    console.log('Successfully retreived URL.');
+                    res.redirect(url.longUrl);
+                }
+                
+                db.close();
+            }); 
         } else {
             console.log('Encountered error connecting to database.' + err + '.');
             res.render(error);

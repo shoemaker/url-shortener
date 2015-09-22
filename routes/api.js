@@ -1,12 +1,9 @@
 var url = require('url');
-var mongo = require('mongodb');  // Init MongoDB library
+var MongoClient = require('mongodb').MongoClient;
 var moment = require('moment');
 var models = require('../models');
 var c = require('../config').config;  // App configuration
 var util = require('../util');
-
-var Db = mongo.Db;
-var ObjectID = require('mongodb').ObjectID;
 
 
 /*
@@ -23,7 +20,7 @@ exports.create = function(req, res) {
     {
         response.message = 'No URL was provided.';
         response.isSuccessful = false;
-        res.json(500, response);
+        res.status(500).json(response);
     } else {
         // URL validation
         // TO DO: more we can do here. 
@@ -41,30 +38,28 @@ exports.create = function(req, res) {
         var query = {};
         query.shortCode = newUrl.shortCode;
 
-        Db.connect(util.buildMongoURL(c.dbs.common), function(err, db) {
+        MongoClient.connect(util.buildMongoURL(c.dbs.common), function(err, db) {
             if(!err) {
-                db.collection('urls', {safe:false}, function(err, collection) {
+                var collection = db.collection('urls');   
+                collection.update(query, newUrl, {safe:false, upsert:true}, function(err, result) {
+                    if (err) {
+                        response.message = 'Encountered error: ' + err + '.';
+                        response.isSuccessful = false;
+                        res.status(500).json(response);
+                    } else {
+                        response.message = 'Successfully added new URL.';
+                        newUrl.shortUrl = util.buildShortURL(newUrl.shortCode);
+                        newUrl.accessedDate = (newUrl.accessedDate) ? moment(newUrl.accessedDate).format('D-MMM-YYYY, HH:mm:ss') : '--';
+                        response.data = newUrl;
+                        res.status(200).json(response);    
+                    }
                     
-                    collection.update(query, newUrl, {safe:false, upsert:true}, function(err, result) {
-                        if (err) {
-                            response.message = 'Encountered error: ' + err + '.';
-                            response.isSuccessful = false;
-                            res.json(500, response);
-                        } else {
-                            response.message = 'Successfully added new URL.';
-                            newUrl.shortUrl = util.buildShortURL(newUrl.shortCode);
-                            newUrl.accessedDate = (newUrl.accessedDate) ? moment(newUrl.accessedDate).format('D-MMM-YYYY, HH:mm:ss') : '--';
-                            response.data = newUrl;
-                            res.json(200, response);    
-                        }
-                        
-                        db.close();
-                    });
-                })
+                    db.close();
+                });
             } else {
                 response.message = 'Encountered error connecting to database. ' + err + '.';
                 response.isSuccessful = false;
-                res.json(500, response);
+                res.status(500).json(response);
             }
         });
     }
@@ -85,7 +80,7 @@ exports.get = function(req, res) {
     if (!req.cookies.userid) {
         response.message = 'Only authenticated users may make this request.';
         response.isSuccessful = false;
-        res.json(401, response);
+        res.status(401).json(response);
     } else { 
         // Build query
         var query = {
@@ -96,35 +91,34 @@ exports.get = function(req, res) {
             query.shortCode = req.params.shortCode;
         }
 
-        Db.connect(util.buildMongoURL(c.dbs.common), function(err, db) {
+        MongoClient.connect(util.buildMongoURL(c.dbs.common), function(err, db) {
             if(!err) {  
-                db.collection('urls', {safe:false}, function(err, collection) {
-                    collection.find(query, {'_id':false}, {'sort': [['accessedDate','desc']]}).toArray(function(err, urls){
-                       if (err) {
-                            response.message = 'Encountered error: ' + err + '.';
-                            response.isSuccessful = false;
-                            res.json(500, response);
-                        } else if (!urls) {
-                            response.message = 'No URL found for ' + req.params.shortCode + '.';
-                            response.isSuccessful = false;
-                            res.json(500, response);
-                        } else {
-                            urls.forEach(function(item, array, index) {
-                                item.shortUrl = util.buildShortURL(item.shortCode);
-                                item.accessedDate = (item.accessedDate) ? moment(item.accessedDate).format('D-MMM-YYYY, HH:mm:ss') : '--';
-                            })
-                            response.data = urls;
-                            response.message = 'Successfully retreived URL(s).';
-                            res.json(200, response);    
-                        }
-                        
-                        db.close();
-                    }); 
-                });
+                var collection = db.collection('urls');
+                collection.find(query, {'_id':false}, {'sort': [['accessedDate','desc']]}).toArray(function(err, urls){
+                   if (err) {
+                        response.message = 'Encountered error: ' + err + '.';
+                        response.isSuccessful = false;
+                        res.status(500).json(response);
+                    } else if (!urls) {
+                        response.message = 'No URL found for ' + req.params.shortCode + '.';
+                        response.isSuccessful = false;
+                        res.status(500).json(response);
+                    } else {
+                        urls.forEach(function(item, array, index) {
+                            item.shortUrl = util.buildShortURL(item.shortCode);
+                            item.accessedDate = (item.accessedDate) ? moment(item.accessedDate).format('D-MMM-YYYY, HH:mm:ss') : '--';
+                        })
+                        response.data = urls;
+                        response.message = 'Successfully retreived URL(s).';
+                        res.status(200).json(response);    
+                    }
+                    
+                    db.close();
+                }); 
             } else {
                 response.message = 'Encountered error connecting to database.' + err + '.';
                 response.isSuccessful = false;
-                res.json(500, response);
+                res.status(500).json(response);
             }
         });
     }
@@ -143,26 +137,25 @@ exports.delete = function(req, res) {
     query.userId = req.cookies.userid;
 
     var response = models.wrapper();
-    Db.connect(util.buildMongoURL(c.dbs.common), function(err, db) {
+    MongoClient.connect(util.buildMongoURL(c.dbs.common), function(err, db) {
         if(!err) {  
-            db.collection('urls', {safe:false}, function(err, collection) {
-                collection.remove(query, function(err){
-                   if (err) {
-                        response.message = 'Encountered error: ' + err + '.';
-                        response.isSuccessful = false;
-                        res.json(500, response);
-                    } else {
-                        response.message = 'Successfully deleted short URL.';
-                        res.json(200, response);    
-                    }
-                    
-                    db.close();
-                }); 
-            });
+            var collection = db.collection('urls');
+            collection.remove(query, function(err){
+               if (err) {
+                    response.message = 'Encountered error: ' + err + '.';
+                    response.isSuccessful = false;
+                    res.status(500).json(response);
+                } else {
+                    response.message = 'Successfully deleted short URL.';
+                    res.status(200).json(response);    
+                }
+                
+                db.close();
+            }); 
         } else {
             response.message = 'Encountered error connecting to database.' + err + '.';
             response.isSuccessful = false;
-            res.json(500, response);
+            res.status(500).json(response);
         }
     });
 }

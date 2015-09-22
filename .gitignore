@@ -5,3 +5,5 @@ npm-debug.log
 config.js
 dist
 public/library
+/public/js/*.min.js
+/public/css/*.min.css
