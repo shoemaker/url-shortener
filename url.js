@@ -2,12 +2,13 @@
 /**
  * Module dependencies.
  */
-var fs = require('fs');  // File system access
-var express = require('express');  // Express framework
-var bodyParser = require('body-parser');
-var compress = require('compression');
-var cookieParser = require('cookie-parser');
-var path = require('path');
+var fs = require('fs'), 
+    express = require('express'), 
+    bodyParser = require('body-parser'),
+    compress = require('compression'), 
+    cookieParser = require('cookie-parser'), 
+    path = require('path'),
+    helmet = require('helmet');
 
 // App configuration
 if (!fs.existsSync('config.js')) {
@@ -25,6 +26,7 @@ var app = express();
 app.set('port', c.appPort || 3000);
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
+app.use(helmet());
 app.use(compress());
 app.use(bodyParser.json());
 app.use(cookieParser('foo'));

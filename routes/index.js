@@ -26,8 +26,11 @@ exports.index = function(req, res){
         if(!err) {  
             var collection = db.collection('users');
             collection.findAndModify(query, [['_id','asc']], { $set : { dateAccessed : new Date() } }, {}, function(err, user) {
-                model.user = user;
-                res.render('index', model);
+                model.user = user.value;
+                
+                db.close(function() { 
+                    res.render('index', model);
+                });
             });
         } else {
             console.log('Encountered error: ' + err + '.');
